@@ -1,5 +1,8 @@
 # git-repo-stats-viewer
 
+# To do
+loop rows in getInfo function 
+
 # Run
 node app.js
 
