@@ -11,7 +11,7 @@ let totalDeletionsForRepo = 0;
 let dataToWrite = "";
 let userList = [];
 let userListStatus = [];
-let data = `<h1>Stats</h1>
+let htmlTemplate = `<h1>Stats</h1>
 <div class="maincontainer"> 
     <div style="font-style: italic; margin-bottom: 30px;">
         <div><strong>Information</strong></div>
@@ -39,7 +39,7 @@ h1 {
 </style>`;
 
 
-fs.writeFile('index.html', data, (err) => { });
+fs.writeFile('index.html', htmlTemplate, (err) => { });
 
 
 exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) => {
@@ -57,7 +57,7 @@ exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) =>
 function getInfo(name, i) {
     exec(`git log --author="${name}" --shortstat --pretty="%an"`, { cwd: '' }, (error, stdout, stderr) => {
         console.log("Reading data for: " + name)
-        
+
         let formatOutput = stdout.trim().split("\n");
         dataToWrite += "<div><strong>" + name + "</strong></div>";
         totalInsertions = 0;
@@ -66,8 +66,6 @@ function getInfo(name, i) {
         for (let i = 0; i < formatOutput.length; i++) {
             if (/^[1-9]/.test(formatOutput[i].trim())) {
                 var formatOutputLine = formatOutput[i].split(",")
-                //dataToWrite += formatOutputLine[1] + "<br>";
-
                 totalInsertions += parseInt(formatOutputLine[1]);
                 totalInsertionsForRepo += parseInt(formatOutputLine[1]);
                 if (formatOutputLine.length == 3) {
@@ -76,7 +74,7 @@ function getInfo(name, i) {
                 }
             }
         }
-        
+
         dataToWrite += "Total insertions: " + totalInsertions.toLocaleString() + "<br>";
         dataToWrite += "Total deletions: " + totalDeletions.toLocaleString() + "<br>";
         dataToWrite += "<br>";
