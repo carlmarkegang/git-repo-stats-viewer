@@ -3,6 +3,12 @@
 # To do
 loop rows in getInfo function 
 
+
+# Idea
+Fetching data for user1...
+replace "Error fetching data" with info
+set interval "progress" 1/10 done
+
 # Run
 node app.js
 
