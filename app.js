@@ -9,23 +9,25 @@ if (repoPath == undefined) {
 let dataToWrite = "";
 let userList = [];
 let userListStatus = [];
-let data = `<h1>Test</h1>
-<div>Error reading log</div>`;
+let data = `<h1>Information</h1>
+<div>Error reading log</div>
+<style>
+body {
+    margin: 0px;
+}
+
+h1 {
+    padding: 10px;
+    background-color: #181e47;
+    color: white;
+}
+</style>`;
 
 
 fs.writeFile('index.html', data, (err) => { });
 
 
 exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) => {
-    if (error) {
-        console.error(`Error executing command: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.error(`stderr: ${stderr}`);
-        return;
-    }
-
     splitText = stdout.trim().split("\n");
     for (let i = 0; i < splitText.length; i++) {
         let username = splitText[i].replace("'", "").replace("'", "");
@@ -44,19 +46,18 @@ function getInfo(name, i) {
         let formatOutput = stdout.trim().split("\n");
         dataToWrite += "<div><strong>" + name + "</strong></div>";
         for (let i = 0; i < formatOutput.length; i++) {
-            if (formatOutput[i] == "" || formatOutput[i] == name) {
-                continue;
+            if (/^[1-9]/.test(formatOutput[i].trim())) {
+                dataToWrite += formatOutput[i] + "<br>";
             }
-            dataToWrite += formatOutput[i] + "<br>";
         }
+
+        dataToWrite += "<br><br>";
 
         return stdout;
     });
-
 }
 
 function AppendDataToIndex(dataToAdd) {
-
     fs.readFile('index.html', function (err, readData) {
         let DataToAddReplace = readData.toString().replace("Error reading log", dataToAdd)
 
@@ -64,7 +65,6 @@ function AppendDataToIndex(dataToAdd) {
             process.exit();
         });
     });
-
 }
 
 function validateStatus() {
@@ -73,9 +73,7 @@ function validateStatus() {
             return;
         }
     }
-
     AppendDataToIndex(dataToWrite);
-
 }
 
 const validateStatusInterval = setInterval(validateStatus, 1000);
