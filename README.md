@@ -9,5 +9,5 @@ npm install -g pkg
 pkg app.js  
 
 # requirements
-git  
+git/git bash for windows  
 node  
