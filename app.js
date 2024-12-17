@@ -9,8 +9,15 @@ if (repoPath == undefined) {
 let dataToWrite = "";
 let userList = [];
 let userListStatus = [];
-let data = `<h1>Information</h1>
-<div class="maincontainer">Error reading log</div>
+let data = `<h1>Stats</h1>
+<div class="maincontainer"> 
+    <div style="font-style: italic; margin-bottom: 30px;">
+        <div><strong>Information</strong></div>
+        Insertions = total number of added code lines <br>
+        Deletions = total number of deleted code lines
+    </div>
+    <div>Error reading log</div>
+</div>
 <style>
 body {
     margin: 0px;
@@ -48,20 +55,28 @@ exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) =>
 function getInfo(name, i) {
     exec(`git log --author="${name}" --shortstat --pretty="%an"`, { cwd: '' }, (error, stdout, stderr) => {
         console.log("Reading data for: " + name)
-        userListStatus[i] = true;
+        
         let formatOutput = stdout.trim().split("\n");
         dataToWrite += "<div><strong>" + name + "</strong></div>";
         totalInsertions = 0;
+        totalDeletions = 0;
+
         for (let i = 0; i < formatOutput.length; i++) {
             if (/^[1-9]/.test(formatOutput[i].trim())) {
-                //dataToWrite += formatOutput[i].split(",")[1] + "<br>";
-                totalInsertions += parseInt(formatOutput[i].split(",")[1]);
+                var formatOutputLine = formatOutput[i].split(",")
+                //dataToWrite += formatOutputLine[1] + "<br>";
+
+                totalInsertions += parseInt(formatOutputLine[1]);
+                if (formatOutputLine.length == 3) {
+                    totalDeletions += parseInt(formatOutputLine[2]);
+                }
             }
         }
-
-        dataToWrite += "Total insertions: " + totalInsertions.toLocaleString() + "";
-        dataToWrite += "<br><br>";
-
+        
+        dataToWrite += "Total insertions: " + totalInsertions.toLocaleString() + "<br>";
+        dataToWrite += "Total deletions: " + totalDeletions.toLocaleString() + "<br>";
+        dataToWrite += "<br>";
+        userListStatus[i] = true;
         return stdout;
     });
 }
