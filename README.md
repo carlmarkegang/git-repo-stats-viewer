@@ -1,13 +1,13 @@
 # Git repository stats viewer 
-Generate a static html page with information about git commits 
+Generate a static html page with information about git commits  
 
 # Run
-node app.js
+node app.js  
 
 # compile
 npm install -g pkg  
 pkg app.js  
 
 # requirements
-git
-node
+git  
+node  
