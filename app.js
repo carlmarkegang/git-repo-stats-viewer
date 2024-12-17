@@ -68,12 +68,13 @@ function getInfo(name, i) {
         console.log("Reading data for: " + name)
 
         let formatOutput = stdout.trim().split("\n");
-        dataToWrite += "<div><strong>" + name + "</strong></div>";
+        totalCommits = 0;     
         totalInsertions = 0;
         totalDeletions = 0;
 
         for (let i = 0; i < formatOutput.length; i++) {
             if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes("insertions(+)")) {
+                totalCommits++;
                 var formatOutputLine = formatOutput[i].split(",")
                 totalInsertions += parseInt(formatOutputLine[1]);
                 totalInsertionsForRepo += parseInt(formatOutputLine[1]);
@@ -84,6 +85,7 @@ function getInfo(name, i) {
             }
         }
 
+        dataToWrite += "<div><strong>" + name + " (" + totalCommits + " commits)</strong></div>";
         dataToWrite += "Total insertions: " + totalInsertions.toLocaleString() + "<br>";
         dataToWrite += "Total deletions: " + totalDeletions.toLocaleString() + "<br>";
         dataToWrite += "<br>";
