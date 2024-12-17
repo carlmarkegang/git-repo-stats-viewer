@@ -1,4 +1,4 @@
-# git repo stats viewer 
+# Git repository stats viewer 
 Generate a static html page with information about git commits 
 
 # Run
