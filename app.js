@@ -1,10 +1,13 @@
 const fs = require('fs');
 const { exec } = require('child_process');
+const path = require('path');
+
 const args = process.argv;
 let repoPath = args[2];
 if (repoPath == undefined) {
-    repoPath = "empty"
+    repoPath = "."
 }
+process.chdir(repoPath);
 
 let totalInsertionsForRepo = 0;
 let totalDeletionsForRepo = 0;
@@ -88,10 +91,21 @@ function AppendDataToIndex(dataToAdd) {
         let DataToAddReplace = readData.toString().replace("Error reading log", dataToAdd)
 
         fs.writeFile('index.html', DataToAddReplace, (err) => {
-            process.exit();
+            openInBrowser('index.html');
         });
     });
 }
+
+// Open the file in the default browser
+const openInBrowser = (file) => {
+    const command = process.platform === 'win32' ? `start "" "${file}"` :
+        process.platform === 'darwin' ? `open "${file}"` :
+            `xdg-open "${file}"`; // For Linux
+
+    exec(command, (err) => {
+        process.exit();
+    });
+};
 
 function validateStatus() {
     for (let i = 0; i < userListStatus.length; i++) {
