@@ -4,10 +4,14 @@ const path = require('path');
 
 const args = process.argv;
 let repoPath = args[2];
+let exportPath = args[3];
 if (repoPath == undefined) {
     repoPath = "."
 }
-process.chdir(repoPath);
+if (exportPath == undefined) {
+    exportPath = "."
+}
+
 
 let totalInsertionsForRepo = 0;
 let totalDeletionsForRepo = 0;
@@ -35,16 +39,18 @@ h1 {
     color: white;
 }
 
-.maincontainer{
-    margin:0 auto;
-    width:900px;
+.maincontainer {
+    margin: 0 auto 100px auto;
+    width: 900px;
 }
 </style>`;
 
-
+process.chdir(repoPath);
+process.chdir(exportPath);
 fs.writeFile('index.html', htmlTemplate, (err) => { });
 
-
+console.log("Listing users please wait");
+process.chdir(repoPath);
 exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) => {
     splitText = stdout.trim().split("\n");
     for (let i = 0; i < splitText.length; i++) {
@@ -67,7 +73,7 @@ function getInfo(name, i) {
         totalDeletions = 0;
 
         for (let i = 0; i < formatOutput.length; i++) {
-            if (/^[1-9]/.test(formatOutput[i].trim())) {
+            if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes("insertions(+)")) {
                 var formatOutputLine = formatOutput[i].split(",")
                 totalInsertions += parseInt(formatOutputLine[1]);
                 totalInsertionsForRepo += parseInt(formatOutputLine[1]);
@@ -87,6 +93,7 @@ function getInfo(name, i) {
 }
 
 function AppendDataToIndex(dataToAdd) {
+    process.chdir(exportPath);
     fs.readFile('index.html', function (err, readData) {
         let DataToAddReplace = readData.toString().replace("Error reading log", dataToAdd)
 
