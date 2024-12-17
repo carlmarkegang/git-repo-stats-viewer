@@ -97,7 +97,7 @@ function AppendDataToIndex(dataToAdd) {
 }
 
 // Open the file in the default browser
-const openInBrowser = (file) => {
+function openInBrowser(file) {
     const command = process.platform === 'win32' ? `start "" "${file}"` :
         process.platform === 'darwin' ? `open "${file}"` :
             `xdg-open "${file}"`; // For Linux
