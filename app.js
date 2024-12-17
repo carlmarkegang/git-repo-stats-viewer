@@ -45,12 +45,15 @@ function getInfo(name, i) {
         userListStatus[i] = true;
         let formatOutput = stdout.trim().split("\n");
         dataToWrite += "<div><strong>" + name + "</strong></div>";
+        totalInsertions = 0;
         for (let i = 0; i < formatOutput.length; i++) {
             if (/^[1-9]/.test(formatOutput[i].trim())) {
-                dataToWrite += formatOutput[i] + "<br>";
+                dataToWrite += formatOutput[i].split(",")[1] + "<br>";
+                totalInsertions += parseInt(formatOutput[i].split(",")[1]);
             }
         }
 
+        dataToWrite += "Total insertions: " + totalInsertions + "";
         dataToWrite += "<br><br>";
 
         return stdout;
