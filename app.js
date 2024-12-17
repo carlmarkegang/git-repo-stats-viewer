@@ -6,6 +6,8 @@ if (repoPath == undefined) {
     repoPath = "empty"
 }
 
+let totalInsertionsForRepo = 0;
+let totalDeletionsForRepo = 0;
 let dataToWrite = "";
 let userList = [];
 let userListStatus = [];
@@ -67,8 +69,10 @@ function getInfo(name, i) {
                 //dataToWrite += formatOutputLine[1] + "<br>";
 
                 totalInsertions += parseInt(formatOutputLine[1]);
+                totalInsertionsForRepo += parseInt(formatOutputLine[1]);
                 if (formatOutputLine.length == 3) {
                     totalDeletions += parseInt(formatOutputLine[2]);
+                    totalDeletionsForRepo += parseInt(formatOutputLine[2]);
                 }
             }
         }
@@ -97,6 +101,10 @@ function validateStatus() {
             return;
         }
     }
+
+    dataToWrite += "<br><br>"
+    dataToWrite += "Total insertions for entire repo: " + totalInsertionsForRepo.toLocaleString() + "<br>";
+    dataToWrite += "Total deletions for entire repo: " + totalDeletionsForRepo.toLocaleString() + "<br>";
     AppendDataToIndex(dataToWrite);
 }
 
