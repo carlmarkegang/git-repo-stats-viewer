@@ -6,12 +6,14 @@ const path = require('path');
 let repoPath = args[2];
 let exportPath = args[3];
 if (repoPath == undefined) {
-    repoPath = "."
+    repoPath = "./"
 }
 if (exportPath == undefined) {
-    exportPath = "."
+    exportPath = "./"
 }
 process.chdir(repoPath);
+process.stdin.setEncoding('utf8');
+process.stdout.setEncoding('utf8');
 
 let totalInsertionsForRepo = 0;
 let totalDeletionsForRepo = 0;
@@ -67,21 +69,21 @@ function startProcessing() {
                 let username = splitText[i].replace("'", "").replace("'", "");
                 userList.push(username);
                 userListStatus.push(false);
-                getInfoForUser(username, i);
             }
+            getInfoForUser(userList[0], 0);
             const validateStatusInterval = setInterval(validateStatus, 3000);
         });
     });
 }
 
 function getInfoForUser(name, i) {
-    exec(`git log --author="${name}" --shortstat --pretty="%an"`, { cwd: '' }, (error, stdout, stderr) => {
-        console.log("Reading data for: " + name)
+    var totalCommits = 0;
+    var totalInsertions = 0;
+    var totalDeletions = 0;
 
+    exec(`git log --author="${name}" --shortstat`, { cwd: '' }, (error, stdout, stderr) => {
+        console.log("Reading data for: " + name)
         let formatOutput = stdout.trim().split("\n");
-        totalCommits = 0;
-        totalInsertions = 0;
-        totalDeletions = 0;
 
         for (let i = 0; i < formatOutput.length; i++) {
             if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes(" insertion")) {
@@ -101,7 +103,10 @@ function getInfoForUser(name, i) {
         dataToWrite += "Total deletions: " + totalDeletions.toLocaleString() + "<br>";
         dataToWrite += "<br>";
         userListStatus[i] = true;
-        return stdout;
+        if(userList[i+1] != undefined){ 
+            getInfoForUser(userList[i+1], i+1)
+        }
+        return;
     });
 }
 
