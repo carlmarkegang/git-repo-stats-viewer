@@ -1,7 +1,6 @@
 # Git repository stats viewer 
 Generate a static html page with information about git commits 
 
-
 # Requirements
 git or "git bash for windows"  
 node 
@@ -23,10 +22,7 @@ Run same path as app.js but export index.html into another path
 ```
 node app.js . ~/Desktop/export
 ```
-# compile
-npm install -g pkg  
-pkg app.js  
- 
+
 
 # Example
 ![example](img/example.png)
