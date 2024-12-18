@@ -1,5 +1,7 @@
 # Git repository stats viewer 
-Generate a static html page with information about git commits  
+Generate a static html page with information about git commits 
+
+![example](img/example.png)
 
 # How to generate a new static html file
 Run for the repository the app.js file is located in

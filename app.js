@@ -1,8 +1,8 @@
 const fs = require('fs');
 const { exec } = require('child_process');
+const args = process.argv;
 const path = require('path');
 
-const args = process.argv;
 let repoPath = args[2];
 let exportPath = args[3];
 if (repoPath == undefined) {
@@ -11,14 +11,14 @@ if (repoPath == undefined) {
 if (exportPath == undefined) {
     exportPath = "."
 }
-
+process.chdir(repoPath);
 
 let totalInsertionsForRepo = 0;
 let totalDeletionsForRepo = 0;
 let dataToWrite = "";
 let userList = [];
 let userListStatus = [];
-let htmlTemplate = `<h1>Stats</h1>
+let htmlTemplate = `<h1>Stats for /${path.basename(process.cwd())}/</h1>
 <div class="maincontainer"> 
     <div style="font-style: italic; margin-bottom: 30px;">
         <div><strong>Information</strong></div>
@@ -45,30 +45,41 @@ h1 {
 }
 </style>`;
 
-process.chdir(repoPath);
-process.chdir(exportPath);
-fs.writeFile('index.html', htmlTemplate, (err) => { });
-
-console.log("Listing users please wait");
-process.chdir(repoPath);
-exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) => {
-    splitText = stdout.trim().split("\n");
-    for (let i = 0; i < splitText.length; i++) {
-        let username = splitText[i].replace("'", "").replace("'", "");
-        userList.push(username);
-        userListStatus.push(false);
-        getInfo(username, i);
-    }
-
-});
 
 
-function getInfo(name, i) {
+function validateBeforeStartProcessing() {
+    exec("git rev-parse --is-inside-work-tree", { cwd: '' }, (error, stdout, stderr) => {
+        if (stdout.includes("true")) {
+            startProcessing();
+        } else {
+            console.log(stderr.toString());
+        }
+    });
+}
+
+function startProcessing() {
+    console.log("Listing users please wait... \n");
+
+    fs.writeFile(exportPath + 'index.html', htmlTemplate, (err) => {
+        exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) => {
+            splitText = stdout.trim().split("\n");
+            for (let i = 0; i < splitText.length; i++) {
+                let username = splitText[i].replace("'", "").replace("'", "");
+                userList.push(username);
+                userListStatus.push(false);
+                getInfoForUser(username, i);
+            }
+            const validateStatusInterval = setInterval(validateStatus, 3000);
+        });
+    });
+}
+
+function getInfoForUser(name, i) {
     exec(`git log --author="${name}" --shortstat --pretty="%an"`, { cwd: '' }, (error, stdout, stderr) => {
         console.log("Reading data for: " + name)
 
         let formatOutput = stdout.trim().split("\n");
-        totalCommits = 0;     
+        totalCommits = 0;
         totalInsertions = 0;
         totalDeletions = 0;
 
@@ -94,28 +105,6 @@ function getInfo(name, i) {
     });
 }
 
-function AppendDataToIndex(dataToAdd) {
-    process.chdir(exportPath);
-    fs.readFile('index.html', function (err, readData) {
-        let DataToAddReplace = readData.toString().replace("Error reading log", dataToAdd)
-
-        fs.writeFile('index.html', DataToAddReplace, (err) => {
-            openInBrowser('index.html');
-        });
-    });
-}
-
-// Open the file in the default browser
-function openInBrowser(file) {
-    const command = process.platform === 'win32' ? `start "" "${file}"` :
-        process.platform === 'darwin' ? `open "${file}"` :
-            `xdg-open "${file}"`; // For Linux
-
-    exec(command, (err) => {
-        process.exit();
-    });
-};
-
 function validateStatus() {
     for (let i = 0; i < userListStatus.length; i++) {
         if (userListStatus[i] == false) {
@@ -129,5 +118,31 @@ function validateStatus() {
     AppendDataToIndex(dataToWrite);
 }
 
-const validateStatusInterval = setInterval(validateStatus, 1000);
+function AppendDataToIndex(dataToAdd) {
+    fs.readFile(exportPath + 'index.html', function (err, readData) {
+        let DataToAddReplace = readData.toString().replace("Error reading log", dataToAdd)
+
+        fs.writeFile(exportPath + 'index.html', DataToAddReplace, (err) => {
+            openInBrowser(exportPath + 'index.html');
+        });
+    });
+}
+
+function openInBrowser(file) {
+    const command = process.platform === 'win32' ? `start "" "${file}"` :
+        process.platform === 'darwin' ? `open "${file}"` :
+            `xdg-open "${file}"`;
+
+    exec(command, (err) => {
+        console.log("\nDone! opening file")
+        process.exit();
+    });
+};
+
+
+
+
+
+validateBeforeStartProcessing();
+
 
