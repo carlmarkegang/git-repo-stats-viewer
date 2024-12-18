@@ -1,7 +1,10 @@
 # Git repository stats viewer 
 Generate a static html page with information about git commits 
 
-![example](img/example.png)
+
+# Requirements
+git or "git bash for windows"  
+node 
 
 # How to generate a new static html file
 Run for the repository the app.js file is located in
@@ -23,7 +26,7 @@ node app.js . ~/Desktop/export
 # compile
 npm install -g pkg  
 pkg app.js  
+ 
 
-# requirements
-git/git bash for windows  
-node  
+# Example
+![example](img/example.png)
