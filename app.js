@@ -84,7 +84,7 @@ function getInfoForUser(name, i) {
         totalDeletions = 0;
 
         for (let i = 0; i < formatOutput.length; i++) {
-            if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes("insertions(+)")) {
+            if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes(" insertion")) {
                 totalCommits++;
                 var formatOutputLine = formatOutput[i].split(",")
                 totalInsertions += parseInt(formatOutputLine[1]);
