@@ -2,6 +2,8 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const args = process.argv;
 const path = require('path');
+process.stdin.setEncoding('utf8');
+process.stdout.setEncoding('utf8');
 
 let repoPath = args[2];
 let exportPath = args[3];
@@ -18,8 +20,6 @@ if (exportFileName == undefined) {
 }
 
 process.chdir(repoPath);
-process.stdin.setEncoding('utf8');
-process.stdout.setEncoding('utf8');
 
 let totalInsertionsForRepo = 0;
 let totalDeletionsForRepo = 0;
