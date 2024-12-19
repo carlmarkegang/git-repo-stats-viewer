@@ -6,6 +6,9 @@ git or "git bash for windows"
 node 
 
 # How to generate a new static html file
+There are several ways to generate a new report.  
+Here are some examples:  
+  
 Run for the repository the app.js file is located in
 ```
 node app.js  
