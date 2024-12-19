@@ -63,7 +63,8 @@ function startProcessing() {
     console.log("Listing users please wait... \n");
 
     fs.writeFile(exportPath + 'index.html', htmlTemplate, (err) => {
-        exec("git log --format='%aN' | sort -u", { cwd: '' }, (error, stdout, stderr) => {
+        exec("git log --format='%aN' | sort -uf", { cwd: '' }, (error, stdout, stderr) => {
+            // explation of command - git log of authors names --format='%aN'. After that sort the list with unqiue filter -u, and use case-insensitive with -f
             splitText = stdout.trim().split("\n");
             for (let i = 0; i < splitText.length; i++) {
                 let username = splitText[i].replace("'", "").replace("'", "");
@@ -84,9 +85,9 @@ function getInfoForUser(name, i) {
     exec(`git log --author="${name}" --shortstat`, { cwd: '' }, (error, stdout, stderr) => {
         console.log("Reading data for: " + name)
         let formatOutput = stdout.trim().split("\n");
-
         for (let i = 0; i < formatOutput.length; i++) {
             if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes(" insertion")) {
+                // Commits including insertions and maybe deletions
                 totalCommits++;
                 var formatOutputLine = formatOutput[i].split(",")
                 totalInsertions += parseInt(formatOutputLine[1]);
@@ -95,6 +96,12 @@ function getInfoForUser(name, i) {
                     totalDeletions += parseInt(formatOutputLine[2]);
                     totalDeletionsForRepo += parseInt(formatOutputLine[2]);
                 }
+            } else if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes(" deletion")) {
+                // Commits just including deletions
+                totalCommits++;
+                var formatOutputLine = formatOutput[i].split(",")
+                totalDeletions += parseInt(formatOutputLine[1]);
+                totalDeletionsForRepo += parseInt(formatOutputLine[1]);
             }
         }
 
@@ -103,8 +110,10 @@ function getInfoForUser(name, i) {
         dataToWrite += "Total deletions: " + totalDeletions.toLocaleString() + "<br>";
         dataToWrite += "<br>";
         userListStatus[i] = true;
-        if(userList[i+1] != undefined){ 
-            getInfoForUser(userList[i+1], i+1)
+
+        // Handle next user in list
+        if (userList[i + 1] != undefined) {
+            getInfoForUser(userList[i + 1], i + 1)
         }
         return;
     });
@@ -143,10 +152,6 @@ function openInBrowser(file) {
         process.exit();
     });
 };
-
-
-
-
 
 validateBeforeStartProcessing();
 
