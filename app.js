@@ -5,12 +5,18 @@ const path = require('path');
 
 let repoPath = args[2];
 let exportPath = args[3];
+let exportFileName = args[4];
 if (repoPath == undefined) {
     repoPath = "./"
 }
 if (exportPath == undefined) {
     exportPath = "./"
 }
+if (exportFileName == undefined) {
+    const date = new Date();
+    exportFileName = "export-"  + date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0') + ".html";
+}
+
 process.chdir(repoPath);
 process.stdin.setEncoding('utf8');
 process.stdout.setEncoding('utf8');
@@ -62,7 +68,7 @@ function validateBeforeStartProcessing() {
 function startProcessing() {
     console.log("Listing users please wait... \n");
 
-    fs.writeFile(exportPath + 'index.html', htmlTemplate, (err) => {
+    fs.writeFile(exportPath + exportFileName, htmlTemplate, (err) => {
         exec("git log --format='%aN' | sort -uf", { cwd: '' }, (error, stdout, stderr) => {
             // explation of command - git log of authors names --format='%aN'. After that sort the list with unqiue filter -u, and use case-insensitive with -f
             splitText = stdout.trim().split("\n");
@@ -133,11 +139,11 @@ function validateStatus() {
 }
 
 function AppendDataToIndex(dataToAdd) {
-    fs.readFile(exportPath + 'index.html', function (err, readData) {
+    fs.readFile(exportPath + exportFileName, function (err, readData) {
         let DataToAddReplace = readData.toString().replace("Error reading log", dataToAdd)
 
-        fs.writeFile(exportPath + 'index.html', DataToAddReplace, (err) => {
-            openInBrowser(exportPath + 'index.html');
+        fs.writeFile(exportPath + exportFileName, DataToAddReplace, (err) => {
+            openInBrowser(exportPath + exportFileName);
         });
     });
 }
