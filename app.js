@@ -129,12 +129,13 @@ function getInfoForUser(name, i) {
 function getInfoForDates() {
     var totalInsertions = 0;
     var totalDeletions = 0;
+    let dateString = "";
 
     console.log("\nFetching date information...")
     exec(`git log --shortstat`, { cwd: '' }, (error, stdout, stderr) => {
         let formatOutput = stdout.trim().split("\n");
-        let dateString = "";
-        for (let i = 0; i < formatOutput.length; i++) {
+        for (let i = 0; i < formatOutput.length; i++) {     
+     
             if (formatOutput[i].includes("Date:")) {
                 // Get date string
                 dateString = formatOutput[i].replace("Date:   ", "").trim().split(" ")[1] + " " + formatOutput[i].replace("Date:   ", "").trim().split(" ")[4];
@@ -153,8 +154,21 @@ function getInfoForDates() {
             }
 
             if (dateString != "") {
-                datesArrayInsertions[dateString] = totalInsertions.toLocaleString();
-                datesArrayDeletions[dateString] = totalDeletions.toLocaleString();
+                // Add data to key value array
+                if(datesArrayInsertions[dateString] == undefined){
+                    datesArrayInsertions[dateString] = 0;
+                }
+                datesArrayInsertions[dateString] = datesArrayInsertions[dateString] += totalInsertions;
+
+                if(datesArrayDeletions[dateString] == undefined){
+                    datesArrayDeletions[dateString] = 0;
+                }
+                datesArrayDeletions[dateString] =  datesArrayDeletions[dateString] += totalDeletions;
+
+                // Reset for next round
+                totalInsertions = 0;
+                totalDeletions = 0;
+                dateString = "";
             }
         }
 
@@ -189,14 +203,14 @@ function AppendDataToIndex(dataToAdd) {
     dataToAdd += "Total insertions for entire repo: " + totalInsertionsForRepo.toLocaleString() + "<br>";
     dataToAdd += "Total deletions for entire repo: " + totalDeletionsForRepo.toLocaleString() + "<br><br>";
 
-    dataToAdd += "<br><div><strong>Insertions for dates</strong></div>"
+    dataToAdd += "<br><div><strong>Insertions for date</strong></div>"
     for (let key in datesArrayInsertions) {
-        dataToAdd += key + ": " + datesArrayInsertions[key] + "<br>";
+        dataToAdd += "<u>" + key + "</u>: " + datesArrayInsertions[key].toLocaleString() + "<br>";
     }
 
-    dataToAdd += "<br><div><strong>Deletions for dates</strong></div>"
+    dataToAdd += "<br><div><strong>Deletions for date</strong></div>"
     for (let key in datesArrayDeletions) {
-        dataToAdd += key + ": " + datesArrayDeletions[key] + "<br>";
+        dataToAdd += "<u>" + key + "</u>: " + datesArrayDeletions[key].toLocaleString() + "<br>";
     }
 
     fs.readFile(exportPath + exportFileName, function (err, readData) {

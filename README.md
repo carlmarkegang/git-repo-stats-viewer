@@ -1,10 +1,10 @@
 # Git repository stats viewer 
-Generate a static html page with information about git commits 
+Generate a static html page with information about git commits. 
 
 # Requirements
-Git or "Git bash for windows"  
-node  
-The script will only work in a english localization configuration of Git
+ * Git or "Git bash for windows"  
+ * Node  
+ * The script will only work in a english localization configuration of Git
 
 # How to generate a new static html file
 There are several ways to generate a new report.  
