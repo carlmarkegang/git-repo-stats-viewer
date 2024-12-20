@@ -2,8 +2,9 @@
 Generate a static html page with information about git commits 
 
 # Requirements
-git or "git bash for windows"  
-node 
+Git or "Git bash for windows"  
+node  
+The script will only work in a english localization configuration of Git
 
 # How to generate a new static html file
 There are several ways to generate a new report.  
