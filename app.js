@@ -16,11 +16,14 @@ if (exportPath == undefined) {
 }
 if (exportFileName == undefined) {
     const date = new Date();
-    exportFileName = "export-"  + date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0') + ".html";
+    exportFileName = "export-" + date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0') + ".html";
 }
 
 process.chdir(repoPath);
 
+let datesArrayInsertions = {};
+let datesArrayDeletions = {};
+let datesArrayFetchStatusString = "Not started";
 let totalInsertionsForRepo = 0;
 let totalDeletionsForRepo = 0;
 let dataToWrite = "";
@@ -54,7 +57,6 @@ h1 {
 </style>`;
 
 
-
 function validateBeforeStartProcessing() {
     exec("git rev-parse --is-inside-work-tree", { cwd: '' }, (error, stdout, stderr) => {
         if (stdout.includes("true")) {
@@ -67,7 +69,6 @@ function validateBeforeStartProcessing() {
 
 function startProcessing() {
     console.log("Listing users please wait... \n");
-
     fs.writeFile(exportPath + exportFileName, htmlTemplate, (err) => {
         exec("git log --format='%aN' | sort -uf", { cwd: '' }, (error, stdout, stderr) => {
             // explation of command - git log of authors names --format='%aN'. After that sort the list with unqiue filter -u, and use case-insensitive with -f
@@ -125,6 +126,57 @@ function getInfoForUser(name, i) {
     });
 }
 
+function getInfoForDates() {
+    var totalInsertions = 0;
+    var totalDeletions = 0;
+    let dateString = "";
+
+    console.log("\nFetching date information...")
+    exec(`git log --shortstat`, { cwd: '' }, (error, stdout, stderr) => {
+        let formatOutput = stdout.trim().split("\n");
+        for (let i = 0; i < formatOutput.length; i++) {     
+     
+            if (formatOutput[i].includes("Date:")) {
+                // Get date string
+                dateString = formatOutput[i].replace("Date:   ", "").trim().split(" ")[1] + " " + formatOutput[i].replace("Date:   ", "").trim().split(" ")[4];
+            }
+            if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes(" insertion")) {
+                // Commits including insertions and maybe deletions
+                var formatOutputLine = formatOutput[i].split(",")
+                totalInsertions += parseInt(formatOutputLine[1]);
+                if (formatOutputLine.length == 3) {
+                    totalDeletions += parseInt(formatOutputLine[2]);
+                }
+            } else if (/^[1-9]/.test(formatOutput[i].trim()) && formatOutput[i].includes(" deletion")) {
+                // Commits just including deletions
+                var formatOutputLine = formatOutput[i].split(",")
+                totalDeletions += parseInt(formatOutputLine[1]);
+            }
+
+            if (dateString != "") {
+                // Add data to key value array
+                if(datesArrayInsertions[dateString] == undefined){
+                    datesArrayInsertions[dateString] = 0;
+                }
+                datesArrayInsertions[dateString] = datesArrayInsertions[dateString] += totalInsertions;
+
+                if(datesArrayDeletions[dateString] == undefined){
+                    datesArrayDeletions[dateString] = 0;
+                }
+                datesArrayDeletions[dateString] =  datesArrayDeletions[dateString] += totalDeletions;
+
+                // Reset for next round
+                totalInsertions = 0;
+                totalDeletions = 0;
+                dateString = "";
+            }
+        }
+
+        datesArrayFetchStatusString = "Completed";
+        return;
+    });
+}
+
 function validateStatus() {
     for (let i = 0; i < userListStatus.length; i++) {
         if (userListStatus[i] == false) {
@@ -132,13 +184,35 @@ function validateStatus() {
         }
     }
 
-    dataToWrite += "<br><br>"
-    dataToWrite += "Total insertions for entire repo: " + totalInsertionsForRepo.toLocaleString() + "<br>";
-    dataToWrite += "Total deletions for entire repo: " + totalDeletionsForRepo.toLocaleString() + "<br>";
+    if (datesArrayFetchStatusString == "Not started") {
+        datesArrayFetchStatusString = "Processing";
+        getInfoForDates();
+    }
+
+    console.log("...");
+
+    if (datesArrayFetchStatusString != "Completed") {
+        return;
+    }
+
     AppendDataToIndex(dataToWrite);
 }
 
 function AppendDataToIndex(dataToAdd) {
+    dataToAdd += "<br>";
+    dataToAdd += "Total insertions for entire repo: " + totalInsertionsForRepo.toLocaleString() + "<br>";
+    dataToAdd += "Total deletions for entire repo: " + totalDeletionsForRepo.toLocaleString() + "<br><br>";
+
+    dataToAdd += "<br><div><strong>Insertions for date</strong></div>"
+    for (let key in datesArrayInsertions) {
+        dataToAdd += "<u>" + key + "</u>: " + datesArrayInsertions[key].toLocaleString() + "<br>";
+    }
+
+    dataToAdd += "<br><div><strong>Deletions for date</strong></div>"
+    for (let key in datesArrayDeletions) {
+        dataToAdd += "<u>" + key + "</u>: " + datesArrayDeletions[key].toLocaleString() + "<br>";
+    }
+
     fs.readFile(exportPath + exportFileName, function (err, readData) {
         let DataToAddReplace = readData.toString().replace("Error reading log", dataToAdd)
 
